@@ -3,7 +3,7 @@ services:
   # 1. Base de Datos de Series de Tiempo (TimescaleDB / PostgreSQL)
   # -------------------------------------------------------------------
   timescaledb:
-    image: timescale/timescaledb-ha:pg16
+    image: timescale/timescaledb:latest-pg16
     container_name: twin-timescaledb
     restart: unless-stopped
     environment:
@@ -22,13 +22,13 @@ services:
   # 2. Broker MQTT Industrial (Eclipse Mosquitto)
   # -------------------------------------------------------------------
   mosquitto:
-    image: eclipse-mosquitto:2
+    image: eclipse-mosquitto:latest
     container_name: twin-mosquitto
     restart: unless-stopped
     ports:
       - "${MQTT_BROKER_PORT:-1883}:1883"
     volumes:
-      - ./config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./config/mosquitto:/mosquitto/config:ro
       - mosquitto-data:/mosquitto/data
     networks:
       - twin-net
