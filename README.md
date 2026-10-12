@@ -53,7 +53,6 @@ Este proyecto aplica estándares de ingeniería de software de nivel de producci
 │           └── manifest.yaml          # Metadatos físicos de sensores y reglas
 ├── tests/
 │   └── test_adapter.py                # Suite de pruebas automatizadas (pytest)
-├── manifest.yaml                      # Configuración global
 ├── pyproject.toml                     # Configuración moderna del paquete (PEP 621)
 ├── requirements.txt                   # Dependencias de producción
 ├── requirements-dev.txt               # Dependencias de desarrollo y testing
