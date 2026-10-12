@@ -1,0 +1,66 @@
+services:
+  # -------------------------------------------------------------------
+  # 1. Base de Datos de Series de Tiempo (TimescaleDB / PostgreSQL)
+  # -------------------------------------------------------------------
+  timescaledb:
+    image: timescale/timescaledb-ha:pg16
+    container_name: twin-timescaledb
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-twin}
+      POSTGRES_USER: ${POSTGRES_USER:-twin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - ./config/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql:ro
+      - timescale-data:/var/lib/postgresql/data
+    networks:
+      - twin-net
+
+  # -------------------------------------------------------------------
+  # 2. Broker MQTT Industrial (Eclipse Mosquitto)
+  # -------------------------------------------------------------------
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: twin-mosquitto
+    restart: unless-stopped
+    ports:
+      - "${MQTT_BROKER_PORT:-1883}:1883"
+    volumes:
+      - ./config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto-data:/mosquitto/data
+    networks:
+      - twin-net
+
+  # -------------------------------------------------------------------
+  # 3. SCADA Industrial (Ignition Gateway)
+  # -------------------------------------------------------------------
+  ignition:
+    image: ignition-cloud:8.3.3
+    container_name: twin-ignition
+    restart: unless-stopped
+    ports:
+      - "${IGNITION_HTTP_PORT:-8089}:8088"
+      - "${IGNITION_HTTPS_PORT:-8043}:8043"
+    environment:
+      ACCEPT_IGNITION_EULA: "Y"
+      IGNITION_EDITION: standard
+      GATEWAY_ADMIN_PASSWORD: ${IGNITION_ADMIN_PASSWORD:-12334}
+      TZ: ${TIMEZONE:-America/Toronto}
+    volumes:
+      - ignition-data:/usr/local/bin/ignition/data
+    depends_on:
+      - timescaledb
+      - mosquitto
+    networks:
+      - twin-net
+
+networks:
+  twin-net:
+    driver: bridge
+
+volumes:
+  timescale-data:
+  mosquitto-data:
+  ignition-data:
