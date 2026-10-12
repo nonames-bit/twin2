@@ -1,20 +1,26 @@
 """
 Pruebas automatizadas (Unit Tests) para el Adapter C-MAPSS FD001
 ================================================================
-Valida los criterios de salida de la Fase 1 según la Propuesta v0.3:
+Valida los criterios de salida de la Fase 1 y las buenas prácticas de arquitectura:
 1. Esquema canónico completo y nombres de columnas estandarizados.
 2. Ausencia de valores nulos.
 3. RUL con tope máximo de 125 (piecewise-linear).
 4. RUL decreciente monotónicamente por motor.
 5. Secuencia de ciclos estrictamente creciente sin duplicados.
 6. Cobertura de activos esperada (100 motores en FD001).
+7. Contratos de dominio Pydantic (CanonicalRecord).
+8. Clave natural de idempotencia en telemetría (TelemetryRecord).
 """
 
+from datetime import datetime
 import os
 import pytest
 import pandas as pd
 import numpy as np
-from adapter import load, DEFAULT_RUL_CAP, DATASET_ID
+
+from adapter import load, DEFAULT_RUL_CAP, DATASET_ID, to_long_telemetry
+from src.core.contracts import CanonicalRecord, TelemetryRecord
+from src.adapters.cmapss.adapter import CmapssAdapter
 
 
 @pytest.fixture(scope="module")
@@ -75,3 +81,32 @@ def test_dataset_cardinality(canonical_data):
     assert canonical_data["asset_id"].nunique() == 100
     assert canonical_data["dataset_id"].iloc[0] == DATASET_ID
     assert canonical_data["modality"].iloc[0] == "timeseries"
+
+
+def test_pydantic_contract_validation(canonical_data):
+    """Verifica que los registros canónicos cumplan estrictamente el modelo tipado Pydantic."""
+    first_row = canonical_data.iloc[0].to_dict()
+    record = CanonicalRecord(**first_row)
+    assert record.asset_id == "cmapss_1"
+    assert record.sequence_no == 1
+    assert record.target == 125.0
+    assert "s1" in record.features
+
+
+def test_telemetry_long_format_and_idempotency_key(canonical_data):
+    """
+    Verifica la conversión a telemetría larga y la generación de la clave
+    de idempotencia para TimescaleDB (dataset_id::asset_id::sequence_no::signal_key).
+    """
+    sample_df = canonical_data.head(2)
+    long_df = to_long_telemetry(sample_df)
+    
+    # 2 ciclos * 24 variables (3 settings + 21 sensores) = 48 filas
+    assert len(long_df) == 48
+    expected_cols = ["asset_id", "observed_at", "sequence_no", "quality", "dataset_id", "signal_key", "value_double", "unit"]
+    assert list(long_df.columns) == expected_cols
+
+    # Verificar creación de TelemetryRecord y clave de idempotencia
+    first_telemetry = long_df.iloc[0].to_dict()
+    record = TelemetryRecord(**first_telemetry)
+    assert record.natural_key == f"cmapss_fd001::cmapss_1::1::{record.signal_key}"

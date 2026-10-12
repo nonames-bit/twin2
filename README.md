@@ -15,37 +15,59 @@ Demostrar un recorrido end-to-end de grado industrial:
 
 ---
 
-## 🚀 Estado Actual: Fase 1 (Contrato y Adapter C-MAPSS)
+## 🏛️ Buenas Prácticas de Arquitectura y Software Implementadas
 
-En esta fase completamos la **Capa A** (Ingesta y Preparación):
-- **Dataset**: NASA C-MAPSS FD001 (100 turbinas turbofan operando hasta la falla).
-- **Target**: RUL (Remaining Useful Life) con función lineal por tramos (*piecewise linear*) y tope en 125 ciclos.
-- **Contrato Canónico**: Esquema universal (`asset_id`, `sequence_no`, `observed_at`, `dataset_id`, `modality`, `media_ref`, `features`, `target`, `split_hint`, `quality_flags`).
-- **Idempotencia**: Clave natural definida por `dataset + activo + secuencia + señal`.
+Este proyecto aplica estándares de ingeniería de software de nivel de producción:
+- **Arquitectura Hexagonal (Ports & Adapters)**:
+  - Puerto de entrada: [`src/core/base_adapter.py`](src/core/base_adapter.py).
+  - Adaptador concreto: [`src/adapters/cmapss/adapter.py`](src/adapters/cmapss/adapter.py).
+  - Principio rector cumplido: *Agregar una nueva fuente de datos requiere solo un adapter y una configuración, sin modificar el resto de la plataforma*.
+- **Contratos de Dominio con Pydantic**:
+  - Modelos fuertemente tipados ([`CanonicalRecord`](src/core/contracts.py) y [`TelemetryRecord`](src/core/contracts.py)).
+  - Validación de tipos y restricciones en tiempo de ejecución.
+  - Clave natural de idempotencia: `dataset_id::asset_id::sequence_no::signal_key`.
+- **Observabilidad con Logging Estructurado**:
+  - Se sustituye el uso de `print()` por el módulo estándar `logging` con niveles de severidad (`INFO`, `WARNING`, `ERROR`).
+- **Pruebas Automatizadas (TDD / Unit Testing)**:
+  - Suite de pruebas con `pytest` en [`tests/test_adapter.py`](tests/test_adapter.py) que valida esquema, nulos, reglas de negocio y cardinalidad.
+- **Integración Continua (CI/CD)**:
+  - Pipeline de GitHub Actions en [`.github/workflows/ci.yml`](.github/workflows/ci.yml) para ejecutar tests y control de calidad en cada push.
+- **Empaquetado Moderno**:
+  - Configuración declarativa en [`pyproject.toml`](pyproject.toml) (PEP 621) y gestión de dependencias en `requirements.txt` / `requirements-dev.txt`.
 
 ---
 
 ## 📁 Estructura del Proyecto
 
 ```text
-├── .gitignore             # Exclusión de archivos crudos pesados y temporales
-├── README.md              # Documentación general del proyecto
-├── manifest.yaml          # Metadatos físicos, sensores y reglas de calidad
-├── adapter.py             # Adaptador de ingesta C-MAPSS al esquema canónico
-└── tests/
-    └── test_adapter.py    # Suite de pruebas automatizadas (pytest)
+├── .github/
+│   └── workflows/
+│       └── ci.yml             # Pipeline de CI (GitHub Actions)
+├── src/
+│   ├── core/
+│   │   ├── base_adapter.py    # Interfaz abstracta (Puerto / Arquitectura Hexagonal)
+│   │   └── contracts.py       # Modelos Pydantic (Esquema Canónico e Idempotencia)
+│   └── adapters/
+│       └── cmapss/
+│           └── adapter.py     # Implementación concreta C-MAPSS FD001
+├── tests/
+│   └── test_adapter.py        # Suite de pruebas automatizadas (pytest)
+├── adapter.py                 # Fachada de conveniencia en la raíz
+├── manifest.yaml              # Metadatos físicos de sensores y reglas de calidad
+├── pyproject.toml             # Configuración moderna del paquete y herramientas
+├── requirements.txt           # Dependencias de producción
+├── requirements-dev.txt       # Dependencias de desarrollo y testing
+└── README.md                  # Documentación del proyecto
 ```
 
 ---
 
 ## 🧪 Cómo Ejecutar las Pruebas
 
-Para validar el adapter y comprobar las reglas de calidad de datos:
-
 ```bash
-# Ejecutar directamente el adapter
+# 1. Probar el adapter directamente
 py adapter.py
 
-# Ejecutar las pruebas unitarias automatizadas
+# 2. Ejecutar la suite completa de pruebas unitarias
 py -m pytest -v
 ```
