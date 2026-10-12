@@ -1,0 +1,10 @@
+name: cmapss_fd001
+source: NASA PCoE (Kaggle behrad3d/nasa-cmaps)
+problem_type: rul_regression
+target: rul
+rul_cap: 125
+columns:
+  engine_id: asset_id
+  cycle: cycle
+  settings: [setting1, setting2, setting3]
+  sensors: [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19, s20, s21]

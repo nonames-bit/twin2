@@ -1,0 +1,23 @@
+# Entornos virtuales y Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+
+# Datos crudos y binarios (Regla del proyecto: Datos crudos no viven en Git)
+Dataset/
+*.zip
+*.tar.gz
+*.h5
+*.hdf5
+
+# Secretos y entorno local
+.env
+.env.local
+*.log
+
+# IDEs
+.vscode/
+.idea/
