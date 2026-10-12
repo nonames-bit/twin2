@@ -8,9 +8,15 @@ logging estructurado para observabilidad de grado industrial.
 
 import logging
 import os
+import sys
 from typing import List, Optional
 import numpy as np
 import pandas as pd
+
+# Asegurar que la raíz del proyecto esté en sys.path para imports absolutos
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 
 from src.core.base_adapter import BaseAdapter
 from src.core.contracts import CanonicalRecord
@@ -41,6 +47,8 @@ class CmapssAdapter(BaseAdapter):
         candidates = [
             os.path.join(data_dir, filename),
             os.path.join(data_dir, "CMaps", filename),
+            os.path.join(ROOT_DIR, "Dataset", "CMaps", filename),
+            os.path.join(ROOT_DIR, "Dataset", filename),
             os.path.join("Dataset", "CMaps", filename),
             os.path.join("Dataset", filename),
         ]
@@ -134,3 +142,33 @@ class CmapssAdapter(BaseAdapter):
                 raise ValueError(f"Regla fallida: Secuencia discontinua o duplicada en {asset}.")
             if not group["target"].is_monotonic_decreasing:
                 raise ValueError(f"Regla fallida: RUL no es monótonamente decreciente en {asset}.")
+
+
+# Función de conveniencia funcional
+def load(data_dir: str = "Dataset/CMaps", **kwargs) -> pd.DataFrame:
+    adapter = CmapssAdapter()
+    return adapter.load(data_dir=data_dir, **kwargs)
+
+
+if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+        datefmt="%H:%M:%S",
+    )
+
+    print("=" * 70)
+    print("   ADAPTER C-MAPSS FD001 (NASA Turbofan)")
+    print(f"   Ubicación: src/adapters/cmapss/adapter.py")
+    print("=" * 70)
+
+    adapter = CmapssAdapter()
+    df_canonical = adapter.load()
+
+    print(f"\n[OK] Carga exitosa: {len(df_canonical):,} registros procesados.")
+    print(f"[OK] Total de turbinas: {df_canonical['asset_id'].nunique()}")
+    print(f"[OK] Columnas del contrato canónico:\n     {list(df_canonical.columns)}")
+    print(f"\n[OK] Vista previa:")
+    print(df_canonical[["asset_id", "sequence_no", "observed_at", "target", "split_hint"]].head(3))
+    print("\n[OK] Calidad y contratos 100% verificados.")
+    print("=" * 70)

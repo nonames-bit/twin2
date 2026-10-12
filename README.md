@@ -42,22 +42,22 @@ Este proyecto aplica estándares de ingeniería de software de nivel de producci
 ```text
 ├── .github/
 │   └── workflows/
-│       └── ci.yml             # Pipeline de CI (GitHub Actions)
+│       └── ci.yml                     # Pipeline de CI (GitHub Actions)
 ├── src/
 │   ├── core/
-│   │   ├── base_adapter.py    # Interfaz abstracta (Puerto / Arquitectura Hexagonal)
-│   │   └── contracts.py       # Modelos Pydantic (Esquema Canónico e Idempotencia)
+│   │   ├── base_adapter.py            # Interfaz abstracta (Puerto / Arquitectura Hexagonal)
+│   │   └── contracts.py               # Modelos Pydantic (Esquema Canónico e Idempotencia)
 │   └── adapters/
 │       └── cmapss/
-│           └── adapter.py     # Implementación concreta C-MAPSS FD001
+│           ├── adapter.py             # Implementación concreta C-MAPSS FD001
+│           └── manifest.yaml          # Metadatos físicos de sensores y reglas
 ├── tests/
-│   └── test_adapter.py        # Suite de pruebas automatizadas (pytest)
-├── adapter.py                 # Fachada de conveniencia en la raíz
-├── manifest.yaml              # Metadatos físicos de sensores y reglas de calidad
-├── pyproject.toml             # Configuración moderna del paquete y herramientas
-├── requirements.txt           # Dependencias de producción
-├── requirements-dev.txt       # Dependencias de desarrollo y testing
-└── README.md                  # Documentación del proyecto
+│   └── test_adapter.py                # Suite de pruebas automatizadas (pytest)
+├── manifest.yaml                      # Configuración global
+├── pyproject.toml                     # Configuración moderna del paquete (PEP 621)
+├── requirements.txt                   # Dependencias de producción
+├── requirements-dev.txt               # Dependencias de desarrollo y testing
+└── README.md                          # Documentación del proyecto
 ```
 
 ---
@@ -65,8 +65,8 @@ Este proyecto aplica estándares de ingeniería de software de nivel de producci
 ## 🧪 Cómo Ejecutar las Pruebas
 
 ```bash
-# 1. Probar el adapter directamente
-py adapter.py
+# 1. Ejecutar el adapter directamente
+py src/adapters/cmapss/adapter.py
 
 # 2. Ejecutar la suite completa de pruebas unitarias
 py -m pytest -v

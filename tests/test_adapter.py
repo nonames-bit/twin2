@@ -12,22 +12,26 @@ Valida los criterios de salida de la Fase 1 y las buenas prácticas de arquitect
 8. Clave natural de idempotencia en telemetría (TelemetryRecord).
 """
 
-from datetime import datetime
 import os
 import pytest
 import pandas as pd
 import numpy as np
 
-from adapter import load, DEFAULT_RUL_CAP, DATASET_ID, to_long_telemetry
+from src.adapters.cmapss.adapter import CmapssAdapter, DEFAULT_RUL_CAP, DATASET_ID, load
 from src.core.contracts import CanonicalRecord, TelemetryRecord
-from src.adapters.cmapss.adapter import CmapssAdapter
 
 
 @pytest.fixture(scope="module")
-def canonical_data():
+def adapter_instance():
+    """Instancia del adaptador C-MAPSS."""
+    return CmapssAdapter()
+
+
+@pytest.fixture(scope="module")
+def canonical_data(adapter_instance):
     """Fixture que carga los datos canónicos una sola vez para todos los tests."""
     data_dir = os.path.join(os.path.dirname(__file__), "..", "Dataset", "CMaps")
-    return load(data_dir=data_dir)
+    return adapter_instance.load(data_dir=data_dir)
 
 
 def test_schema_columns(canonical_data):
@@ -93,17 +97,20 @@ def test_pydantic_contract_validation(canonical_data):
     assert "s1" in record.features
 
 
-def test_telemetry_long_format_and_idempotency_key(canonical_data):
+def test_telemetry_long_format_and_idempotency_key(adapter_instance, canonical_data):
     """
     Verifica la conversión a telemetría larga y la generación de la clave
     de idempotencia para TimescaleDB (dataset_id::asset_id::sequence_no::signal_key).
     """
     sample_df = canonical_data.head(2)
-    long_df = to_long_telemetry(sample_df)
-    
+    long_df = adapter_instance.to_long_telemetry(sample_df)
+
     # 2 ciclos * 24 variables (3 settings + 21 sensores) = 48 filas
     assert len(long_df) == 48
-    expected_cols = ["asset_id", "observed_at", "sequence_no", "quality", "dataset_id", "signal_key", "value_double", "unit"]
+    expected_cols = [
+        "asset_id", "observed_at", "sequence_no", "quality",
+        "dataset_id", "signal_key", "value_double", "unit"
+    ]
     assert list(long_df.columns) == expected_cols
 
     # Verificar creación de TelemetryRecord y clave de idempotencia
