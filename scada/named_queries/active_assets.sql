@@ -6,9 +6,9 @@
 -- Base de datos: twin
 -- =====================================================================
 
-SELECT DISTINCT 
+SELECT 
     asset_id AS value,
     'Turbina ' || asset_id AS label
 FROM telemetry
 GROUP BY asset_id
-ORDER BY asset_id ASC;
+ORDER BY NULLIF(regexp_replace(asset_id, '\D', '', 'g'), '')::INT ASC, asset_id ASC;

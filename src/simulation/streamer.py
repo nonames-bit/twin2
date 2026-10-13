@@ -14,16 +14,11 @@ import argparse
 import json
 import logging
 import os
-import sys
 import time
 from typing import Optional
+
 from dotenv import load_dotenv
 from paho.mqtt import client as mqtt
-
-# Configuración de rutas para imports absolutos
-ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-if ROOT_DIR not in sys.path:
-    sys.path.insert(0, ROOT_DIR)
 
 from src.adapters.cmapss.adapter import CmapssAdapter
 
@@ -66,7 +61,9 @@ def stream_telemetry(
 
     records = df_canonical.to_dict(orient="records")
     total_records = len(records)
-    logger.info(f"Iniciando emisión de {total_records} ciclos de vuelo a {rate_sec}s por mensaje.")
+    logger.info(
+        f"Iniciando emisión de {total_records} ciclos de vuelo a {rate_sec}s por mensaje."
+    )
 
     try:
         while True:
@@ -83,7 +80,8 @@ def stream_telemetry(
 
                 client.publish(topic, json.dumps(payload), qos=1)
                 logger.info(
-                    f"[{i}/{total_records}] {row['asset_id']} Ciclo #{row['sequence_no']:03d} -> Tópico: {topic}"
+                    f"[{i}/{total_records}] {row['asset_id']} "
+                    f"Ciclo #{row['sequence_no']:03d} -> Tópico: {topic}"
                 )
                 time.sleep(rate_sec)
 
@@ -106,9 +104,15 @@ if __name__ == "__main__":
     )
 
     parser = argparse.ArgumentParser(description="Emulador de Telemetría Industrial MQTT")
-    parser.add_argument("--asset", type=str, default="cmapss_1", help="ID del motor a transmitir")
-    parser.add_argument("--rate", type=float, default=0.5, help="Segundos entre cada ciclo de vuelo")
-    parser.add_argument("--repeat", action="store_true", help="Repetir infinitamente en bucle")
+    parser.add_argument(
+        "--asset", type=str, default="cmapss_1", help="ID del motor a transmitir"
+    )
+    parser.add_argument(
+        "--rate", type=float, default=0.5, help="Segundos entre cada ciclo de vuelo"
+    )
+    parser.add_argument(
+        "--repeat", action="store_true", help="Repetir infinitamente en bucle"
+    )
     args = parser.parse_args()
 
     stream_telemetry(asset_filter=args.asset, rate_sec=args.rate, repeat=args.repeat)

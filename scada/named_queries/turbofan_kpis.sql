@@ -19,9 +19,10 @@ SELECT
     MAX(CASE WHEN t.signal_key = 's4' THEN t.value_double END) AS lpt_temp_s4,
     MAX(CASE WHEN t.signal_key = 's7' THEN t.value_double END) AS hpc_press_s7,
     MAX(CASE WHEN t.signal_key = 's8' THEN t.value_double END) AS fan_speed_s8,
+    -- Estado de salud calculado por degradación térmica real de la turbina (LPT Temp s4)
     CASE 
-        WHEN t.sequence_no > 160 THEN 'Critico'
-        WHEN t.sequence_no > 100 THEN 'Alerta'
+        WHEN MAX(CASE WHEN t.signal_key = 's4' THEN t.value_double END) >= 1418.0 THEN 'Critico'
+        WHEN MAX(CASE WHEN t.signal_key = 's4' THEN t.value_double END) >= 1408.0 THEN 'Alerta'
         ELSE 'Normal'
     END AS health_status
 FROM telemetry t

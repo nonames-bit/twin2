@@ -21,3 +21,10 @@ Dataset/
 # IDEs
 .vscode/
 .idea/
+
+# Empaquetado y caches de pruebas
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/

@@ -8,6 +8,7 @@ estrictamente el contrato canónico y las reglas de idempotencia.
 
 from datetime import datetime
 from typing import Dict, Literal, Optional
+
 from pydantic import BaseModel, Field, field_validator
 
 

@@ -3,7 +3,7 @@ services:
   # 1. Base de Datos de Series de Tiempo (TimescaleDB / PostgreSQL)
   # -------------------------------------------------------------------
   timescaledb:
-    image: timescale/timescaledb:latest-pg16
+    image: ${TIMESCALEDB_IMAGE:-timescale/timescaledb:2.14.2-pg16}
     container_name: twin-timescaledb
     restart: unless-stopped
     environment:
@@ -22,7 +22,7 @@ services:
   # 2. Broker MQTT Industrial (Eclipse Mosquitto)
   # -------------------------------------------------------------------
   mosquitto:
-    image: eclipse-mosquitto:latest
+    image: ${MOSQUITTO_IMAGE:-eclipse-mosquitto:2.0.18}
     container_name: twin-mosquitto
     restart: unless-stopped
     ports:
@@ -37,7 +37,7 @@ services:
   # 3. SCADA Industrial (Ignition Gateway)
   # -------------------------------------------------------------------
   ignition:
-    image: ignition-cloud:8.3.3
+    image: ${IGNITION_IMAGE:-ignition-cloud:8.3.3}
     container_name: twin-ignition
     restart: unless-stopped
     ports:
@@ -46,7 +46,7 @@ services:
     environment:
       ACCEPT_IGNITION_EULA: "Y"
       IGNITION_EDITION: standard
-      GATEWAY_ADMIN_PASSWORD: ${IGNITION_ADMIN_PASSWORD:-12334}
+      GATEWAY_ADMIN_PASSWORD: ${IGNITION_ADMIN_PASSWORD:-change_me_ignition}
       TZ: ${TIMEZONE:-America/Toronto}
     volumes:
       - ignition-data:/usr/local/bin/ignition/data
