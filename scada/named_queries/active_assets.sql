@@ -8,8 +8,7 @@
 
 SELECT DISTINCT 
     asset_id AS value,
-    'Turbina ' || asset_id AS label,
-    MAX(sequence_no) AS max_cycle
+    'Turbina ' || asset_id AS label
 FROM telemetry
 GROUP BY asset_id
 ORDER BY asset_id ASC;
