@@ -56,7 +56,7 @@ Plataforma de Gemelo Digital industrial para mantenimiento predictivo que conect
 | **Fase 1** | Dominio Canónico & Hexagonal | ✅ **Completado** | Adapter C-MAPSS, Pydantic contracts, manifest gobernando unidades físicas y RUL cap a 125. |
 | **Fase 2** | Streaming MQTT & Persistencia | ✅ **Completado** | Mosquitto broker, TimescaleDB hypertable, Ingestor resiliente con reconexión y tests herméticos. |
 | **Fase 4** | SCADA Ignition Perspective | ✅ **Completado** | Named queries optimizadas, tarjetas de estado térmico, tendencias temporales y tabla de sensores. |
-| **Fase 3** | Machine Learning & MLOps | 🔄 **En curso** | Regresión RUL con XGBoost + cuantificación de incertidumbre con MAPIE (90% conformal). |
+| **Fase 3** | Machine Learning & Incertidumbre | ✅ **Completado** | XGBoost + MAPIE Conformal (91.0% cobertura, RMSE 17.22 ciclos en 100 turbinas NASA), inferencia en vivo y persistencia en TimescaleDB. |
 | **Fase 5** | Visión & Asistente RAG | ⏳ **Roadmap** | Inspección visual superficial de anomalías y recuperación de manuales técnicos para mantenimiento. |
 
 ---
